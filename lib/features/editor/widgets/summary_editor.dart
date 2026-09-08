@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/app_spacing.dart';
 import '../../../core/design/widgets/app_text_field.dart';
-import '../../../state/providers.dart';
 import '../../../state/resume_editor/resume_editor_provider.dart';
-import 'ai_suggestion_sheet.dart';
 
 const _exampleSummaries = [
   'Results-driven software engineer with 5+ years building scalable web '
@@ -44,16 +42,6 @@ class _SummaryEditorState extends ConsumerState<SummaryEditor> {
     ref.read(resumeEditorProvider(widget.resumeId).notifier).updateSummary(value);
   }
 
-  Future<void> _improveWithAi() async {
-    final ai = ref.read(aiServiceProvider);
-    final suggestion = await showAiTextSuggestionSheet(
-      context: context,
-      title: 'Improve Summary',
-      load: () => ai.improveSummary(_controller.text),
-    );
-    if (suggestion != null) _setSummary(suggestion);
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -80,20 +68,10 @@ class _SummaryEditorState extends ConsumerState<SummaryEditor> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$wordCount words',
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                    TextButton.icon(
-                      onPressed: _improveWithAi,
-                      icon: const Icon(Icons.auto_awesome_outlined, size: 16),
-                      label: const Text('Improve with AI'),
-                    ),
-                  ],
+                Text(
+                  '$wordCount words',
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 if (trimmed.isEmpty) ...[
                   const SizedBox(height: AppSpacing.xs),

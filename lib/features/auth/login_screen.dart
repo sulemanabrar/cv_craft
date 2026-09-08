@@ -81,7 +81,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Password reset email sent to $email.')),
+          SnackBar(
+            content: Text(
+              'If $email has a password sign-in, a reset link is on its way — check '
+              'your inbox and spam folder. Signed up with Google? Use "Continue with '
+              'Google" below instead.',
+            ),
+            duration: const Duration(seconds: 6),
+          ),
         );
       }
     } on AuthException catch (e) {
