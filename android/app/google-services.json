@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "56446072383",
+    "project_id": "cv-craft-91e54",
+    "storage_bucket": "cv-craft-91e54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56446072383:android:f9d672c5be0e012e43aa8a",
+        "android_client_info": {
+          "package_name": "com.sulemanlabs.cv_craft"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "56446072383-1sisvhk5rfp8dam31gsgtpjoctig7csf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sulemanlabs.cv_craft",
+            "certificate_hash": "9e91d3a9d634379cb7daaf649ad62dd6222d2ace"
+          }
+        },
+        {
+          "client_id": "56446072383-3ib5dm3iedevfku32toe3k9o8qtbb4k8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGK252-7W5exW74VupONaycXj-SVIYBkE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "56446072383-3ib5dm3iedevfku32toe3k9o8qtbb4k8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "56446072383-j02903rg91kbo5k3v5ar77ul0j1q2nrq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cvMaker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
