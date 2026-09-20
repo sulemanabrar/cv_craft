@@ -1,7 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/constants/legal_links.dart';
 import '../../core/constants/route_paths.dart';
 import '../../core/design/app_spacing.dart';
 import '../../core/design/widgets/app_text_field.dart';
@@ -60,6 +63,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    await launchUrl(Uri.parse(privacyPolicyUrl), mode: LaunchMode.externalApplication);
   }
 
   Future<void> _submitWithGoogle() async {
@@ -132,6 +139,27 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
                     errorText: _errorText,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text.rich(
+                    TextSpan(
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      children: [
+                        const TextSpan(text: 'By creating an account, you agree to our '),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = _openPrivacyPolicy,
+                        ),
+                        const TextSpan(text: '.'),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   PrimaryButton(

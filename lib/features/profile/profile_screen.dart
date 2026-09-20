@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/constants/legal_links.dart';
 import '../../core/design/app_spacing.dart';
 import '../../state/auth/auth_provider.dart';
 import '../../state/settings/theme_mode_provider.dart';
@@ -24,6 +26,10 @@ class ProfileScreen extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(authRepositoryProvider).signOut();
     }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    await launchUrl(Uri.parse(privacyPolicyUrl), mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -85,6 +91,13 @@ class ProfileScreen extends ConsumerWidget {
                     leading: Icon(Icons.lock_outline_rounded),
                     title: Text('Your data stays on this device'),
                     subtitle: Text('CVs are stored locally — nothing is uploaded to a server.'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined),
+                    title: const Text('Privacy Policy'),
+                    trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                    onTap: _openPrivacyPolicy,
                   ),
                   const Divider(height: 1),
                   const ListTile(
