@@ -23,9 +23,13 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.2'
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
+
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
 
       - name: Get dependencies
         run: flutter pub get
@@ -36,12 +40,28 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
 
-      - name: Create key.properties
+      - name: Verify keystore
         run: |
-          echo "storePassword=${{ secrets.STOREPASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEYPASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEYALIAS }}" >> android/key.properties
+          ls -lh android/app/upload-keystore.jks
+          file android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        env:
+          STOREPASSWORD: ${{ secrets.STOREPASSWORD }}
+          KEYPASSWORD: ${{ secrets.KEYPASSWORD }}
+          KEYALIAS: ${{ secrets.KEYALIAS }}
+        run: |
+          echo "storePassword=$STOREPASSWORD" > android/key.properties
+          echo "keyPassword=$KEYPASSWORD" >> android/key.properties
+          echo "keyAlias=$KEYALIAS" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      - name: Verify key.properties
+        run: |
+          test -f android/key.properties
+          test -f android/app/upload-keystore.jks
+          echo "key.properties exists"
+          echo "Keystore exists"
 
       - name: Build APK
         run: flutter build apk --release
@@ -51,3 +71,6 @@ jobs:
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+
+          
