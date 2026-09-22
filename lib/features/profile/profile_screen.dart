@@ -4,11 +4,19 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/legal_links.dart';
 import '../../core/design/app_spacing.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../state/auth/auth_provider.dart';
 import '../../state/settings/theme_mode_provider.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _isDeleting = false;
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
@@ -32,8 +40,95 @@ class ProfileScreen extends ConsumerWidget {
     await launchUrl(Uri.parse(privacyPolicyUrl), mode: LaunchMode.externalApplication);
   }
 
+  Future<void> _openAccountDeletionInfo() async {
+    await launchUrl(Uri.parse(accountDeletionInfoUrl), mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: const Text(
+          "This permanently deletes your account and signs you out. This can't be undone.",
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await _deleteAccountWithReauth(context, ref);
+    } on AuthException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  Future<void> _deleteAccountWithReauth(BuildContext context, WidgetRef ref) async {
+    final authRepository = ref.read(authRepositoryProvider);
+    try {
+      await authRepository.deleteAccount();
+      return;
+    } on ReauthRequiredException {
+      // Fall through to reauthenticate below.
+    }
+
+    final user = authRepository.currentUser;
+    final usesGoogle = user?.providerData.any((p) => p.providerId == 'google.com') ?? false;
+
+    if (usesGoogle) {
+      await authRepository.reauthenticateWithGoogle();
+    } else {
+      if (!context.mounted) return;
+      final password = await _promptPassword(context);
+      if (password == null) return;
+      await authRepository.reauthenticateWithPassword(password);
+    }
+
+    await authRepository.deleteAccount();
+  }
+
+  Future<String?> _promptPassword(BuildContext context) async {
+    final controller = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm your password'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Password'),
+          onSubmitted: (value) => Navigator.pop(context, value),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return (password == null || password.isEmpty) ? null : password;
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final user = ref.watch(authStateChangesProvider).value;
     final theme = Theme.of(context);
@@ -59,6 +154,19 @@ class ProfileScreen extends ConsumerWidget {
                     leading: Icon(Icons.logout_rounded, color: theme.colorScheme.error),
                     title: Text('Sign out', style: TextStyle(color: theme.colorScheme.error)),
                     onTap: () => _confirmSignOut(context, ref),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: _isDeleting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.delete_forever_rounded, color: theme.colorScheme.error),
+                    title: Text('Delete account', style: TextStyle(color: theme.colorScheme.error)),
+                    enabled: !_isDeleting,
+                    onTap: _isDeleting ? null : () => _confirmDeleteAccount(context, ref),
                   ),
                 ],
               ),
@@ -98,6 +206,13 @@ class ProfileScreen extends ConsumerWidget {
                     title: const Text('Privacy Policy'),
                     trailing: const Icon(Icons.open_in_new_rounded, size: 18),
                     onTap: _openPrivacyPolicy,
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.no_accounts_outlined),
+                    title: const Text('Delete Account & Data'),
+                    trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                    onTap: _openAccountDeletionInfo,
                   ),
                   const Divider(height: 1),
                   const ListTile(

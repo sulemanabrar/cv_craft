@@ -11,6 +11,13 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
+/// Thrown by [AuthRepository.deleteAccount] when Firebase requires the user
+/// to have signed in recently before allowing a sensitive operation like
+/// account deletion. Callers should reauthenticate and retry.
+class ReauthRequiredException extends AuthException {
+  const ReauthRequiredException() : super('Please sign in again to confirm this action.');
+}
+
 abstract interface class AuthRepository {
   Stream<User?> authStateChanges();
   User? get currentUser;
@@ -20,6 +27,16 @@ abstract interface class AuthRepository {
   Future<void> signInWithGoogle();
   Future<void> sendPasswordResetEmail(String email);
   Future<void> signOut();
+
+  /// Permanently deletes the signed-in user's account.
+  ///
+  /// Throws [ReauthRequiredException] if Firebase requires a fresh sign-in
+  /// first — call [reauthenticateWithPassword] or [reauthenticateWithGoogle]
+  /// (depending on the user's sign-in provider) and retry.
+  Future<void> deleteAccount();
+
+  Future<void> reauthenticateWithPassword(String password);
+  Future<void> reauthenticateWithGoogle();
 }
 
 class FirebaseAuthRepository implements AuthRepository {
@@ -93,6 +110,70 @@ class FirebaseAuthRepository implements AuthRepository {
     await _auth.signOut();
     if (!kIsWeb) {
       await _googleSignIn.signOut();
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw const ReauthRequiredException();
+      }
+      throw AuthException(_messageFor(e));
+    }
+
+    if (!kIsWeb) {
+      await _googleSignIn.signOut();
+    }
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw const AuthException('Unable to verify your identity. Please sign in again.');
+    }
+
+    try {
+      final credential = EmailAuthProvider.credential(email: email, password: password);
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e));
+    }
+  }
+
+  @override
+  Future<void> reauthenticateWithGoogle() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthException('Unable to verify your identity. Please sign in again.');
+    }
+
+    try {
+      if (kIsWeb) {
+        await user.reauthenticateWithPopup(GoogleAuthProvider());
+        return;
+      }
+
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        throw const AuthException('Sign-in was cancelled.');
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e));
     }
   }
 

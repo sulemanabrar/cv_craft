@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'app.dart';
 import 'data/repositories/hive_resume_repository.dart';
 import 'data/repositories/hive_settings_repository.dart';
@@ -42,7 +40,6 @@ Future<void> main() async {
     );
   }, (error, stack) {
     if (Firebase.apps.isEmpty) {
-      // Firebase hadn't finished initializing yet; nothing to report to.
       debugPrint('Uncaught zone error before Firebase init: $error');
       return;
     }
