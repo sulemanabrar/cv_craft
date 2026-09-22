@@ -32,6 +32,12 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> sendPasswordResetEmail(String email) async {}
   @override
   Future<void> signOut() async {}
+  @override
+  Future<void> deleteAccount() async {}
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {}
+  @override
+  Future<void> reauthenticateWithGoogle() async {}
 }
 
 class _FakeResumeRepository implements ResumeRepository {
