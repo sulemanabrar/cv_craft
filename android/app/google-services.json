@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "56446072383-bpar2r5tpb5c1m9vg4nai36sk0ojri0l.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sulemanlabs.cv_craft",
-            "certificate_hash": "23fc52e3bbc66f1c058b27fcbbf960f95e4492a4"
-          }
-        },
-        {
           "client_id": "56446072383-hrf9o91gv856hdgoj3pgeni5duinveld.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
