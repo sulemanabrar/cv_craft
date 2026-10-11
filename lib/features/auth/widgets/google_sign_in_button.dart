@@ -23,7 +23,7 @@ class GoogleSignInButton extends StatelessWidget {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.g_mobiledata_rounded, size: 22),
+                  Image.asset('assets/fonts/images/google_logo.png', width: 18, height: 18),
                   const SizedBox(width: AppSpacing.sm),
                   const Text('Continue with Google'),
                 ],
