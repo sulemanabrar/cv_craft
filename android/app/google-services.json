@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "56446072383-cg2efqbka223b2ohqqffiqrktf7vbbb4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sulemanlabs.cv_craft",
+            "certificate_hash": "71970f9cdaf1984dd33fb32175532a039063a1d7"
+          }
+        },
+        {
           "client_id": "56446072383-hrf9o91gv856hdgoj3pgeni5duinveld.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
